@@ -1,0 +1,20 @@
+---
+- name: Playbook to handle groups
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Create group ops with gid 1234
+    ipa_user:
+      name: venga
+      state: present
+      loginshell: /bin/bash
+      sn: venga
+      password: vengavenga
+      givenname: venga
+      uidnumber: 1001
+      gidnumber: 1002
+      ipa_host: idm.ocp4.cfernand.sergio.link
+      ipa_user: admin
+      ipa_pass: redhat2020

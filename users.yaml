@@ -1,0 +1,38 @@
+---
+- name: Playbook to handle groups
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - getent:
+      database: passwd
+      split: ':'      
+    register: allusers
+
+  - debug:
+      var: allusers.ansible_facts.getent_passwd
+
+  - name: "Show file path only"
+    debug:
+      msg:
+        - "name: {{ item.key }}"
+        - "uid: {{ item.value.1 }}"
+        - "gid: {{ item.value.2 }}"
+    loop: "{{ allusers.ansible_facts.getent_passwd | dict2items }}"
+
+  - name: Create group ops with gid 1234
+    ipa_user:
+      name: "{{ item.key }}"
+      state: present
+      loginshell: /bin/bash
+      sn: "{{ item.key }}"
+      password: "{{ item.key }}"
+      givenname: "{{ item.key }}"
+      uidnumber: "{{ item.value.1 }}"
+      gidnumber: "{{ item.value.2 }}"
+      ipa_host: idm.ocp4.cfernand.sergio.link
+      ipa_user: admin
+      ipa_pass: redhat2020
+    loop: "{{ allusers.ansible_facts.getent_passwd | dict2items }}"
+    when: item.value.1 | int > 1000
